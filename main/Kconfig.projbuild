@@ -1,0 +1,25 @@
+menu "Device Configuration"
+
+    orsource "$IDF_PATH/examples/common_components/env_caps/$IDF_TARGET/Kconfig.env_caps"
+
+    config DEVICE_LDR_PIN
+        int "Light dependent resistor pin"
+        default -1
+
+    config DEVICE_INT_PIN
+        int "SEN0626 interrupt pin"
+        default -1
+
+    config DEVICE_SDA_PIN
+        int "SEN0626 SDA pin"
+        default -1
+
+    config DEVICE_SCL_PIN
+        int "SEN0626 SCL pin"
+        default -1
+
+    config DEVICE_LDR_SENSOR_REPORT_INTERVAL_MS
+        int "Light dependent resistor report interval in ms"
+        default 10000
+
+endmenu
