@@ -35,8 +35,10 @@ withCredentials([
 
             stage('Deploy gesture device') {
                 dir('GestureDevice') {
-                    sh 'chmod +x scripts/upload.sh'
-                    sh 'scripts/upload.sh https://iot.ginbov.nl'
+                    container('idf') {
+                        sh 'chmod +x scripts/upload.sh'
+                        sh 'scripts/upload.sh https://iot.ginbov.nl'
+                    }
                 }
             }
         }
