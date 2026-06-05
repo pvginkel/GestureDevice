@@ -43,3 +43,10 @@ relations:
     source: ss:gesture-device,a002a971-868f-4723-80b9-7740349ebcf9
     target: svc:home-assistant-mqtt,23572189-9185-4a6d-a073-2b2820578e11
     type: Association
+
+  # Realizes the IoT-device capability — the selection axis for the IoT view
+  # (in-house ESP32 firmware, managed by IoTSupport, integrated via MQTT discovery).
+  - id: rel:gesture-device-realizes-iot-device
+    source: ss:gesture-device,a002a971-868f-4723-80b9-7740349ebcf9
+    target: cap:iot-device
+    type: Realization
