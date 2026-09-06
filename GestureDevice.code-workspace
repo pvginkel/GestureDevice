@@ -1,31 +1,24 @@
 {
   "folders": [
     {
-      "name": "GestureDevice",
       "path": ".",
     },
     {
-      "name": "esp-support",
       "path": "../esp-libs/esp-support",
     },
     {
-      "name": "esp-network-support",
       "path": "../esp-libs/esp-network-support",
     },
     {
-      "name": "esp-mqtt-support",
       "path": "../esp-libs/esp-mqtt-support",
     },
     {
-      "name": "esp-light-algorithms",
       "path": "../esp-libs/esp-light-algorithms",
     },
     {
-      "name": "esp-status-led-support",
       "path": "../esp-libs/esp-status-led-support",
     },
     {
-      "name": "esp-sensor-support",
       "path": "../esp-libs/esp-sensor-support",
     },
     {
