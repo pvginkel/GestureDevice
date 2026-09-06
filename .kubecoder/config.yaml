@@ -1,0 +1,31 @@
+# GestureDevice — ESP32-S3 firmware built with ESP-IDF.
+
+# The build needs pvginkel/esp-libs checked out *beside* this repo. The top-level
+# CMakeLists.txt reads ../esp-libs/<component>/sdkconfig.defaults and
+# main/idf_component.yml declares ../../esp-libs/<component> path dependencies, so
+# /work/esp-libs is what makes both resolve — the same layout the Jenkinsfile
+# arranges by cloning esp-libs next to the repo. Without it CMake configure fails
+# on a missing component path. Read-only from here: nothing in this environment
+# writes to esp-libs, hence `shared: true` (one clone for every environment).
+repos:
+  - url: https://github.com/pvginkel/esp-libs
+    shared: true
+
+capabilities:
+  github: rw
+
+# ESP-IDF 5.5.3. Its catalog entry carries the activation wrapper (every
+# `cexec esp-idf` command runs through /opt/esp/entrypoint.sh, so the verbs below
+# are bare `idf.py ...`), the memory limit and the ccache home overlay — none of
+# that is restated here.
+tools:
+  - use: esp-idf
+
+# No services: the firmware talks to IoT Support, an MQTT broker and Keycloak on
+# the real network, and none of them is exercised by a build.
+# No imageBuilder: this repo ships a firmware binary, not a container image.
+# No secrets: the IoTSupport OIDC credentials are the deploy stage's, which is
+# CI's (scripts/upload.sh) and out of scope for the environment.
+
+setup:
+  - kc project setup

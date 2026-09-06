@@ -1,0 +1,31 @@
+projects:
+  # One component: an ESP-IDF project is a single build unit. `main/` is an IDF
+  # component of that build, not a sub-project with a gate of its own.
+  root:
+    description: >-
+      ESP32-S3 gesture device firmware (ESP-IDF 5.5.3) — SEN0626 gesture sensor
+      and an LDR, reporting over MQTT. Builds against pvginkel/esp-libs at
+      /work/esp-libs.
+    # The main build+deploy pipeline. The repo has a second Jenkinsfile,
+    # Jenkinsfile.architecture, run by the job AaC/GestureDevice — the
+    # Architecture-as-Code producer, whose check is `lint:` below.
+    jenkins: Firmware/GestureDevice
+
+    # No setup: `idf.py build` resolves and fetches the managed components itself
+    # (into the gitignored managed_components/), so a fresh clone is buildable
+    # with nothing done to it first.
+
+    # As CI runs it. `cexec esp-idf` already goes through the toolchain's
+    # activation wrapper, so this is the bare command, not CI's
+    # `/opt/esp/entrypoint.sh idf.py build`.
+    build: cexec esp-idf idf.py build
+
+    # No test: the repo has no test suite. Firmware behaviour is verified on real
+    # hardware after `scripts/upload.sh` publishes the binary to IoT Support.
+
+    # The Architecture-as-Code producer check, exactly as Jenkinsfile.architecture
+    # runs it. Stdlib-only Python, so it runs in the dev container rather than the
+    # esp-idf sidecar. Note it POSTs the artifact to
+    # https://architecture.webathome.org/api/validate — a network call inside a
+    # gate, so `kc project lint` fails if that service is unreachable.
+    lint: ./scripts/arch-validate.py docs/architecture/*.yaml
