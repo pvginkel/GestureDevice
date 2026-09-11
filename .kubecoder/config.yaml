@@ -26,6 +26,3 @@ tools:
 # No imageBuilder: this repo ships a firmware binary, not a container image.
 # No secrets: the IoTSupport OIDC credentials are the deploy stage's, which is
 # CI's (scripts/upload.sh) and out of scope for the environment.
-
-setup:
-  - kc project setup
