@@ -23,9 +23,13 @@ projects:
     # No test: the repo has no test suite. Firmware behaviour is verified on real
     # hardware after `scripts/upload.sh` publishes the binary to IoT Support.
 
-    # The Architecture-as-Code producer check, exactly as Jenkinsfile.architecture
-    # runs it. Stdlib-only Python, so it runs in the dev container rather than the
-    # esp-idf sidecar. Note it POSTs the artifact to
+    # First, the Architecture-as-Code producer check, exactly as
+    # Jenkinsfile.architecture runs it. Stdlib-only Python, so it runs in the dev
+    # container rather than the esp-idf sidecar. Note it POSTs the artifact to
     # https://architecture.webathome.org/api/validate — a network call inside a
     # gate, so `kc project lint` fails if that service is unreachable.
-    lint: ./scripts/arch-validate.py docs/architecture/*.yaml
+    # Second, the formatting gate: every C/C++ source and header under main/ must
+    # match main/.clang-format. clang-format comes from the native toolchain.
+    lint:
+      - ./scripts/arch-validate.py docs/architecture/*.yaml
+      - cexec native sh -c 'find main \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print0 | xargs -0 clang-format --dry-run --Werror'
