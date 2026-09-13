@@ -20,6 +20,8 @@ capabilities:
 # that is restated here.
 tools:
   - use: esp-idf
+  # Provides clang-format for the `lint:` gate over main/.
+  - use: native
 
 # No services: the firmware talks to IoT Support, an MQTT broker and Keycloak on
 # the real network, and none of them is exercised by a build.
