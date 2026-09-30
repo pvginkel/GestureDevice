@@ -22,6 +22,8 @@ tools:
   - use: esp-idf
   # Provides clang-format for the `lint:` gate over main/.
   - use: native
+  # arch-validate, the architecture artifact's lint gate.
+  - use: aac-tools
 
 # No services: the firmware talks to IoT Support, an MQTT broker and Keycloak on
 # the real network, and none of them is exercised by a build.
