@@ -1,47 +1,69 @@
+// Builds the GestureDevice firmware and uploads it over the air through IoTSupport, at
+// https://iot.ginbov.nl.
+//
+// Controller config:
+//   - Job: Firmware/GestureDevice
+//   - SCM: pvginkel/GestureDevice, branch main
+//   - Script Path: Jenkinsfile
+
 library identifier: 'JenkinsPipelineUtils', changelog: false
 
-withVault([vaultSecrets: [
-    [path: 'kv/jenkins/iotsupport-pipeline-oidc', engineVersion: 2, secretValues: [
-        [envVar: 'IOTSUPPORT_CLIENT_ID', vaultKey: 'client_id'],
-        [envVar: 'IOTSUPPORT_CLIENT_SECRET', vaultKey: 'client_secret'],
-    ]],
-]]) {
-    podTemplate(inheritFrom: 'jenkins-agent-large', containers: [
-        containerTemplate(name: 'idf', image: 'espressif/idf:v5.5.3', command: 'sleep', args: 'infinity', envVars: [
-            containerEnvVar(key: 'IOTSUPPORT_CLIENT_ID', value: '$IOTSUPPORT_CLIENT_ID'),
-            containerEnvVar(key: 'IOTSUPPORT_CLIENT_SECRET', value: '$IOTSUPPORT_CLIENT_SECRET'),
-        ])
-    ]) {
-        node(POD_LABEL) {
-            stage('Build gesture device') {
-                dir('esp-libs') {
-                    git branch: 'main',
-                        credentialsId: '5f6fbd66-b41c-405f-b107-85ba6fd97f10',
-                        url: 'https://github.com/pvginkel/esp-libs.git'
-                }
+pipeline {
+    agent {
+        kubernetes {
+            inheritFrom 'jenkins-agent-large'
+            yamlMergeStrategy merge()
+            yaml podYaml(images: [[image: 'espressif/idf:v5.5.3', name: 'idf']])
+        }
+    }
 
+    options {
+        // Without abortPrevious: an upload cut off by an abort leaves the devices on two firmware
+        // versions.
+        disableConcurrentBuilds()
+        skipDefaultCheckout()
+        timeout(time: 60, unit: 'MINUTES')
+        timestamps()
+    }
+
+    triggers {
+        githubPush()
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
                 dir('GestureDevice') {
-                    git branch: 'main',
-                        credentialsId: '5f6fbd66-b41c-405f-b107-85ba6fd97f10',
-                        url: 'https://github.com/pvginkel/GestureDevice.git'
-                        
-                    container('idf') {
-                        // Necessary because the IDF container doesn't have support
-                        // for setting the uid/gid.
-                        sh 'git config --global --add safe.directory \'*\''
-
-                        sh '/opt/esp/entrypoint.sh idf.py build'
-                    }
+                    checkout scm
+                }
+                dir('esp-libs') {
+                    git url: 'https://github.com/pvginkel/esp-libs.git', branch: 'main',
+                        credentialsId: '5f6fbd66-b41c-405f-b107-85ba6fd97f10'
                 }
             }
+        }
 
-            stage('Deploy gesture device') {
-                dir('GestureDevice') {
-                    container('idf') {
-                        sh 'chmod +x scripts/upload.sh'
-                        sh 'scripts/upload.sh https://iot.ginbov.nl'
-                    }
+        stage('Build firmware') {
+            steps {
+                script {
+                    espFirmware.build(dir: 'GestureDevice')
                 }
+            }
+        }
+
+        stage('Deploy firmware') {
+            steps {
+                script {
+                    espFirmware.upload(dir: 'GestureDevice')
+                }
+            }
+        }
+    }
+
+    post {
+        aborted {
+            script {
+                notify.error("${env.JOB_NAME} #${env.BUILD_NUMBER} aborted (timeout or hand)")
             }
         }
     }
